@@ -1,27 +1,27 @@
 {
-  "app_name": "killua_gin22",
+  "app_name": "killua_gin",
   "debug": true,
   "file_domain": "localhost",
+  "oauth2": {
+    "github": {
+      "client_id": "3765dbe36374fc22a62e",
+      "client_secret": "f0ec973a78f2d00cf93c3210cfdece3f8576d1eb"
+    }
+  },
   "database": {
     "db": {
       "drive": "mysql",
-      "port": 3306,
+      "port": "33060",
       "host": "127.0.0.1",
-      "password": "root",
-      "db_name": "test2"
-    },
-    "db_log": {
-      "drive": "mysql",
-      "port": 3306,
-      "host": "127.0.0.1",
-      "password": "root",
-      "db_name": "log"
+      "user_name": "homestead",
+      "password": "secret",
+      "db_name": "blog"
     },
     "redis": {
       "port": 6379,
       "host": "127.0.0.1",
-      "password": "root",
-      "index": 8
+      "password": "",
+      "index": 0
     }
   }
 }
