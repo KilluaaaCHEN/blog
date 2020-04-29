@@ -10,14 +10,30 @@ import (
 	"time"
 )
 
-var instance *gorm.DB
-var once sync.Once
+var dbInst *gorm.DB
+var dbOnce sync.Once
 
-func Instance() *gorm.DB {
-	once.Do(func() {
-		dbConfig := viper.GetStringMapString("database.db")
-		connAddr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", dbConfig["user_name"], dbConfig["password"], dbConfig["host"], dbConfig["port"], dbConfig["db_name"])
+type Db struct {
+	Drive    string
+	Host     string
+	Port     int
+	UserName string `mapstructure:"user_name"`
+	Password string
+	DbName   string `mapstructure:"db_name"`
+}
+
+func InstDB() *gorm.DB {
+	dbOnce.Do(func() {
+		var config Db
+		if err := viper.UnmarshalKey("database.db", &config); err != nil {
+			log.Fatal(err)
+		}
+		connAddr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", config.UserName, config.Password, config.Host, config.Port, config.DbName)
+
 		db, err := gorm.Open("mysql", connAddr)
+		if err != nil {
+			log.Fatal("failed to connect database:", err)
+		}
 
 		cuAt := time.Now().Unix()
 
@@ -43,11 +59,8 @@ func Instance() *gorm.DB {
 
 		db.LogMode(viper.GetBool("debug"))
 
-		if err != nil {
-			log.Fatal("failed to connect database:", err)
-		}
-		fmt.Println("连接了一次...")
-		instance = db
+		fmt.Println("db connected...")
+		dbInst = db
 	})
-	return instance
+	return dbInst
 }

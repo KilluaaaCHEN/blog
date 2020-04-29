@@ -45,7 +45,7 @@ func (u User) Login(c *gin.Context, ip string) error {
 	if u.State != StateActive {
 		return errors.New("账号违规,已被停用")
 	}
-	db := dao.Instance()
+	db := dao.InstDB()
 	db.Model(&u).Updates(User{LastAt: int(time.Now().Unix()), LastIp: ip})
 	u.StoreLogin(c)
 	return nil
@@ -55,7 +55,7 @@ func (u User) Login(c *gin.Context, ip string) error {
 Github登录
 */
 func (u User) LoginGithubUser(c *gin.Context, gh github.Github, ip string) (User, error) {
-	db := dao.Instance()
+	db := dao.InstDB()
 	var userKey UserKey
 	user := User{}
 	if db.Where("type = 'github' AND app_id = ? AND identity = ?", gh.AppId, gh.Id).First(&userKey).RecordNotFound() {
