@@ -3,9 +3,10 @@ package ctrl
 import (
 	"blog/common/models"
 	"blog/common/tools"
+	"blog/common/validates"
 	"blog/dao"
 	"github.com/gin-gonic/gin"
-	"strconv"
+	"net/http"
 	"strings"
 )
 
@@ -14,22 +15,21 @@ type Post struct {
 
 func (u *Post) List(c *gin.Context) {
 
-	page := c.PostForm("page")
-	if page == "" {
-		page = "1"
-	}
-	pageIndex, err := strconv.Atoi(page)
-	if err != nil {
-		c.JSON(200, gin.H{"err": "param_err", "err_msg": "page参数错误"})
+	contextInfo, _ := c.Get("context")
+	switch contextInfo.(type) {
+	case error:
+		c.JSON(http.StatusBadRequest, gin.H{"err": "param_error", "err_msg": contextInfo.(error).Error()})
 		return
 	}
+	context := contextInfo.(validates.ListParam)
+
 	pageSize, totalCount := 5, 0
 	db, p, posts := dao.Instance(), tools.Paginate{}, make([]models.Post, pageSize)
 
 	query := db.Model(&models.Post{}).Where("state_id = 10")
 	query.Count(&totalCount)
 
-	paginate := p.Init(pageSize, pageIndex, totalCount)
+	paginate := p.Init(pageSize, context.PageIndex, totalCount)
 
 	query.Limit(pageSize).Offset(paginate["offset"]).Find(&posts)
 	for i, v := range posts {

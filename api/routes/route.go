@@ -2,6 +2,7 @@ package routes
 
 import (
 	"blog/api/ctrl"
+	"blog/common/validates"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -22,20 +23,11 @@ func LoadRoute(r *gin.Engine) {
 	r.Use(sessions.Sessions("login", store))
 
 	var siteCtrl ctrl.Site
-
-	r.GET("oauth2/callback", siteCtrl.Callback)
+	var postCtrl ctrl.Post
+	var vaPost validates.Post
 
 	r.GET("/", siteCtrl.Index)
-
-	var postCtrl ctrl.Post
-	r.POST("/posts", postCtrl.List)
-
-	//site := r.Group("site")
-	//{
-	//	site.POST("index", siteCtrl.Index)
-	//	site.POST("login", siteCtrl.Login)
-	//	site.POST("logout", siteCtrl.Login)
-	//	site.POST("setting", siteCtrl.Setting)
-	//}
+	r.GET("oauth2/callback", siteCtrl.Callback)
+	r.POST("/posts", vaPost.ValidateList, postCtrl.List)
 
 }
