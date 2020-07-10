@@ -1,8 +1,8 @@
 package ctrl
 
 import (
-	"blog/common/models"
-	"blog/common/tools/oauth2/github"
+	"blog_api/common/models"
+	"blog_api/common/tools/oauth2/github"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"

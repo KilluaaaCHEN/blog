@@ -1,10 +1,10 @@
 package models
 
 import (
-	"blog/common/tools/oauth2/github"
-	"blog/dao"
+	"blog_api/common/tools"
+	"blog_api/common/tools/oauth2/github"
+	"blog_api/dao"
 	"errors"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/jinzhu/gorm"
 	"strconv"
@@ -13,6 +13,7 @@ import (
 
 type User struct {
 	Id        int
+	GithubId  string
 	UserName  string
 	Password  string
 	NickName  string `gorm:"column:nickname"`
@@ -40,14 +41,13 @@ const (
 
 /**
 用户登陆
- */
+*/
 func (u User) Login(c *gin.Context, ip string) error {
 	if u.State != StateActive {
 		return errors.New("账号违规,已被停用")
 	}
 	db := dao.InstDB()
 	db.Model(&u).Updates(User{LastAt: int(time.Now().Unix()), LastIp: ip})
-	u.StoreLogin(c)
 	return nil
 }
 
@@ -55,11 +55,14 @@ func (u User) Login(c *gin.Context, ip string) error {
 Github登录
 */
 func (u User) LoginGithubUser(c *gin.Context, gh github.Github, ip string) (User, error) {
-	db := dao.InstDB()
-	var userKey UserKey
 	user := User{}
-	if db.Where("type = 'github' AND app_id = ? AND identity = ?", gh.AppId, gh.Id).First(&userKey).RecordNotFound() {
-		user := User{
+	if gh.Id == 0 {
+		return user, errors.New("获取账号失败")
+	}
+	db := dao.InstDB()
+	if db.Where("github_id = ?", gh.Id).First(&user).RecordNotFound() {
+		user = User{
+			GithubId:  strconv.Itoa(gh.Id),
 			UserName:  gh.UserName,
 			NickName:  gh.NickName,
 			Email:     gh.Email,
@@ -69,16 +72,12 @@ func (u User) LoginGithubUser(c *gin.Context, gh github.Github, ip string) (User
 			Bio:       gh.Bio,
 			State:     1,
 			RegIp:     ip,
+			Password:  tools.Str{}.Random(128),
 		}
 		db.Create(&user)
-
-		userKey.AppId = gh.AppId
-		userKey.Type = "github"
-		userKey.Identity = strconv.Itoa(gh.Id)
-		userKey.Uid = user.Id
-		db.Create(&userKey)
-	} else {
-		db.First(&user, userKey.Uid)
+	}
+	if user.Id == 0 {
+		return user, errors.New("账号创建失败")
 	}
 	err := user.Login(c, ip)
 	if err != nil {
@@ -87,12 +86,12 @@ func (u User) LoginGithubUser(c *gin.Context, gh github.Github, ip string) (User
 	return user, nil
 }
 
-/**
-保存登录凭证
-*/
-func (u *User) StoreLogin(c *gin.Context) {
-	session := sessions.Default(c)
-	session.Set("user_id", u.Id)
-	session.Set("user_name", u.UserName)
-	session.Save()
+func (u *User) GetUserByPwd(pwd string) (User, error) {
+	db := dao.InstDB()
+	user := User{}
+	db.Where("password = ?", pwd).First(&user)
+	if user.Id == 0 {
+		return user, errors.New("请重新登录")
+	}
+	return user, nil
 }

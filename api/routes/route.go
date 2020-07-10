@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"blog/api/ctrl"
-	"blog/common/validates"
+	"blog_api/api/ctrl"
+	"blog_api/common/validates"
+	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ import (
 func AuthMiddleware(c *gin.Context) {
 	path := c.FullPath()
 	session := sessions.Default(c)
+	fmt.Println(session.Get("site"))
 	if session.Get("site") == nil && path != "/site/login" {
 		c.JSON(200, gin.H{"status": "err", "err_msg": "请登录"})
 		return

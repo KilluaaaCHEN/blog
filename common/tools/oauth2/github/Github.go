@@ -33,9 +33,8 @@ const (
 func (u *Github) GetUserInfo(code string) (Github, error) {
 	gh := Github{}
 	ak, err := u.getAt(code)
+	ak = "d0c46199ff0b4599e876ba2d3f0053e1630c94c2"
 	err = nil
-	ak = "e9a5f559001ab702564d35ce9f53ea27e716825e"
-	fmt.Println(ak)
 	if err != nil {
 		return gh, err
 	}

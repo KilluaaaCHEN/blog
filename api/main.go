@@ -1,8 +1,8 @@
 package main
 
 import (
-	"blog/api/routes"
-	"blog/config"
+	"blog_api/api/routes"
+	"blog_api/config"
 	"github.com/gin-gonic/gin"
 	"log"
 )

@@ -1,10 +1,10 @@
 package ctrl
 
 import (
-	"blog/common/models"
-	"blog/common/tools"
-	"blog/common/validates"
-	"blog/dao"
+	"blog_api/common/models"
+	"blog_api/common/tools"
+	"blog_api/common/validates"
+	"blog_api/dao"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
